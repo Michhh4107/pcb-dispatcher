@@ -74,6 +74,6 @@ public class BoardService {
 
     private Board getBoardById(Long id) {
         return boardRepository.findById(id)
-                .orElseThrow(() -> new BoardNotFoundException("Board " + id + " not found"));
+                .orElseThrow(() -> new BoardNotFoundException("Board with id " + id + " not found"));
     }
 }
