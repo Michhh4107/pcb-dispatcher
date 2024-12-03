@@ -29,30 +29,28 @@ public class BoardController {
         return new ResponseEntity<>(board, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{id}/install")
+    @PatchMapping("/{id}/install")
     public ResponseEntity<BoardDto> installComponents(@PathVariable Long id) {
         BoardDto updatedBoard = boardService.install(id);
         return ResponseEntity.ok(updatedBoard);
     }
 
-    @PostMapping("/{id}/quality")
+    @PatchMapping("/{id}/quality")
     public ResponseEntity<BoardDto> qualityCheck(@PathVariable Long id) {
         BoardDto updatedBoard = boardService.qualityControl(id);
         return ResponseEntity.ok(updatedBoard);
     }
 
-    @PostMapping("/{id}/repair")
+    @PatchMapping("/{id}/repair")
     public ResponseEntity<BoardDto> repairBoard(@PathVariable Long id) {
         BoardDto updatedBoard = boardService.repair(id);
         return ResponseEntity.ok(updatedBoard);
     }
 
-    @PostMapping("/{id}/pack")
+    @PatchMapping("/{id}/pack")
     public ResponseEntity<BoardDto> packBoard(@PathVariable Long id) {
         BoardDto updatedBoard = boardService.pack(id);
         return ResponseEntity.ok(updatedBoard);
     }
-
-
 
 }

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -39,60 +40,36 @@ public class BoardService {
 
     @Transactional
     public BoardDto install(Long id) {
-        Board board = getBoardById(id);
-
-        BoardStatus action = BoardStatus.COMPONENT_INSTALLATION;
-        BoardStatus currentStatus = board.getStatus();
-        BoardStatus requiredStatus = BoardStatus.REGISTRATION;
-
-        validateAllowedAction(action, currentStatus, requiredStatus);
-
-        board.setStatus(BoardStatus.COMPONENT_INSTALLATION);
-        return boardMapper.toDto(board);
+        return changeStatus(id, Set.of(BoardStatus.REGISTRATION), BoardStatus.COMPONENT_INSTALLATION);
     }
 
     @Transactional
     public BoardDto qualityControl(Long id) {
-        Board board = getBoardById(id);
-
-        BoardStatus action = BoardStatus.QUALITY_CONTROL;
-        BoardStatus currentStatus = board.getStatus();
-        BoardStatus requiredStatus = BoardStatus.COMPONENT_INSTALLATION;
-
-        validateAllowedAction(action, currentStatus, requiredStatus);
-
-        board.setStatus(BoardStatus.QUALITY_CONTROL);
-        return boardMapper.toDto(board);
+        return changeStatus(id, Set.of(BoardStatus.COMPONENT_INSTALLATION, BoardStatus.REPAIR), BoardStatus.QUALITY_CONTROL);
     }
 
     @Transactional
     public BoardDto repair(Long id) {
-        Board board = getBoardById(id);
-
-        BoardStatus action = BoardStatus.REPAIR;
-        BoardStatus currentStatus = board.getStatus();
-        BoardStatus requiredStatus = BoardStatus.QUALITY_CONTROL;
-
-        validateAllowedAction(action, currentStatus, requiredStatus);
-
-        board.setStatus(BoardStatus.REPAIR);
-        return boardMapper.toDto(board);
+        return changeStatus(id, Set.of(BoardStatus.QUALITY_CONTROL), BoardStatus.REPAIR);
     }
 
     @Transactional
     public BoardDto pack(Long id) {
-        Board board = getBoardById(id);
-
-        board.setStatus(BoardStatus.PACKAGING);
-        return boardMapper.toDto(board);
+        return changeStatus(id, Set.of(BoardStatus.QUALITY_CONTROL), BoardStatus.PACKAGING);
     }
 
-    private void validateAllowedAction(BoardStatus action, BoardStatus currentStatus, BoardStatus requiredStatus) {
-        if (!currentStatus.equals(requiredStatus)) {
+    private BoardDto changeStatus(Long id, Set<BoardStatus> allowedStatuses, BoardStatus newStatus) {
+        Board board = getBoardById(id);
+
+        if (!allowedStatuses.contains(board.getStatus())) {
             throw new ActionNotAllowedException(
-                    action.getDescription() + " is allowed only in " + requiredStatus + " status. Current status: " + currentStatus
+                    String.format("Transition to %s is allowed only from %s. Current status: %s",
+                            newStatus, allowedStatuses, board.getStatus())
             );
         }
+
+        board.setStatus(newStatus);
+        return boardMapper.toDto(board);
     }
 
     private Board getBoardById(Long id) {
